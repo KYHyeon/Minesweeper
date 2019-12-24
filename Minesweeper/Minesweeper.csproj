@@ -100,10 +100,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\fag.bmp" />
+    <None Include="Resources\flag.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\flag.png" />
+    <None Include="Resources\question-mark.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

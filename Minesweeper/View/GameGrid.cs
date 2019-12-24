@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -63,12 +65,21 @@ namespace Minesweeper.View
 
             if (sender is Cell c)
             {
-                _game.NextFlag(c.Row, c.Column);
+                if (_game.IsVisited(c.R,c.C))
+                {
+                    e.Handled = true;
+                    return;
+                }
+
+                _game.NextFlag(c.R, c.C);
                 Invalidate(c);
             }
 
             e.Handled = true;
         }
+
+        private readonly int[] _cx = {-1, 0, 1, 0};
+        private readonly int[] _cy = {0, -1, 0, 1};
 
         public void Cell_Click(object sender, RoutedEventArgs e)
         {
@@ -78,29 +89,73 @@ namespace Minesweeper.View
                 return;
             }
 
-            if (sender is Cell c)
+            if (sender is Cell cell)
             {
-                if (_game.GetFlag(c.Row, c.Column) != CellType.None)
+                if (_game.GetFlag(cell.R, cell.C) != CellType.None)
                 {
                     return;
                 }
 
-                bool b = _game.IsBomb(c.Row, c.Column);
-//                c.Content = b.ToString();
+                bool b = _game.IsBomb(cell.R, cell.C);
                 if (b)
                 {
                     Clear(); //TODO 새로시작 테스트용
+                    e.Handled = true;
+                    return;
+                }
+
+                _game.SetVisited(cell.R, cell.C);
+                if (_game.CalcVal(cell.R, cell.C) == 0)
+                {
+                    Bfs(cell);
+
+                    Invalidate();
                 }
                 else
                 {
-                    _game.SetCheck(c.Row, c.Column);
-//                    c.Content = _game.CalcVal(c.Row, c.Column);
+                    Invalidate(cell);
                 }
-
-                Invalidate(c);
             }
 
             e.Handled = true;
+        }
+
+        private void Bfs(Cell cell)
+        {
+            var q = new Queue();
+            q.Enqueue(new KeyValuePair<int, int>(cell.R, cell.C));
+
+            while (q.Count != 0)
+            {
+                var t = (KeyValuePair<int, int>) q.Dequeue();
+
+                foreach (var i in _cx)
+                {
+                    int r = t.Key + i;
+                    if (r < 0 || r >= _game.Row)
+                    {
+                        continue;
+                    }
+
+                    foreach (var j in _cy)
+                    {
+                        int c = t.Value + j;
+
+                        if (c < 0 || c >= _game.Column)
+                        {
+                            continue;
+                        }
+
+                        if (_game.IsVisited(r, c)) continue;
+
+                        _game.SetVisited(r, c);
+                        if (_game.CalcVal(r, c) == 0)
+                        {
+                            q.Enqueue(new KeyValuePair<int, int>(r, c));
+                        }
+                    }
+                }
+            }
         }
 
         public void Invalidate()
@@ -123,47 +178,50 @@ namespace Minesweeper.View
 
         public void Invalidate(Cell c)
         {
-            CellType type = _game.GetFlag(c.Row, c.Column);
+            var type = _game.GetFlag(c.R, c.C);
             if (type != CellType.None)
             {
                 switch (type)
                 {
                     case CellType.Flag:
                         c.Background = new SolidColorBrush(Colors.Orange);
-                        Image image = new Image();
-                        MemoryStream bitmapStream = new MemoryStream();
-                        Properties.Resources.flag.Save(bitmapStream, System.Drawing.Imaging.ImageFormat.Png);
-                        bitmapStream.Seek(0, SeekOrigin.Begin);
-                        BitmapFrame newBitmapFrame = BitmapFrame.Create(bitmapStream);
-                        image.Source = newBitmapFrame;
-
-                        StackPanel stackPnl = new StackPanel();
-                        stackPnl.Orientation = Orientation.Horizontal;
-                        stackPnl.Margin = new Thickness(10);
-                        stackPnl.Children.Add(image);
-                        c.Content = stackPnl;
+                        c.Content = MakeImagePanel(Properties.Resources.flag);
                         break;
                     case CellType.Question:
                         c.Background = new SolidColorBrush(Colors.YellowGreen);
+                        c.Content = MakeImagePanel(Properties.Resources.question_mark);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
-            else if (_game.IsChecked(c.Row, c.Column))
+            else if (_game.IsVisited(c.R, c.C))
             {
-                int val = _game.CalcVal(c.Row, c.Column);
+                var val = _game.CalcVal(c.R, c.C);
                 c.Content = val == 0 ? "" : val.ToString();
                 c.Foreground = new SolidColorBrush(_numberColors[val]);
                 c.Background = new SolidColorBrush(_backgroundColor);
                 c.FontSize = FontSize;
-                c.BorderThickness = new Thickness(3);
+                c.BorderThickness = new Thickness(2);
             }
             else
             {
                 c.Background = new SolidColorBrush(Colors.CornflowerBlue);
                 c.BorderThickness = new Thickness(1);
+                c.Content = "";
             }
+        }
+
+        private static StackPanel MakeImagePanel(System.Drawing.Image resource, double margin = 10)
+        {
+            var bitmapStream = new MemoryStream();
+            resource.Save(bitmapStream, System.Drawing.Imaging.ImageFormat.Png);
+            bitmapStream.Seek(0, SeekOrigin.Begin);
+            var newBitmapFrame = BitmapFrame.Create(bitmapStream);
+            var image = new Image {Source = newBitmapFrame};
+            var stackPnl = new StackPanel {Orientation = Orientation.Horizontal, Margin = new Thickness(margin)};
+            stackPnl.Children.Add(image);
+            return stackPnl;
         }
     }
 }

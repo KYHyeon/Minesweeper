@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.Win32;
 using Minesweeper.View;
 
 namespace Minesweeper.Model
@@ -11,7 +10,7 @@ namespace Minesweeper.Model
 
         private CellType[,] _flagMap;
         private bool[,] _mineMap;
-        private bool[,] _checkMap;
+        private bool[,] _visitedMap;
         private readonly int _bombCnt;
         private readonly Random _random = new Random();
         private GameGrid _gameGrid;
@@ -31,7 +30,7 @@ namespace Minesweeper.Model
         {
             _flagMap = new CellType[Row, Column];
             _mineMap = new bool[Row, Column];
-            _checkMap = new bool[Row, Column];
+            _visitedMap = new bool[Row, Column];
             int cnt = 0;
             while (cnt < _bombCnt)
             {
@@ -89,14 +88,14 @@ namespace Minesweeper.Model
             return r >= 0 && r < Row && c >= 0 && c < Column;
         }
 
-        public bool IsChecked(int r, int c)
+        public bool IsVisited(int r, int c)
         {
-            return _checkMap[r, c];
+            return _visitedMap[r, c];
         }
 
-        public void SetCheck(int r, int c)
+        public void SetVisited(int r, int c)
         {
-            _checkMap[r, c] = true;
+            _visitedMap[r, c] = true;
         }
 
         public CellType GetFlag(int r, int c)
