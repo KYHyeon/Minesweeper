@@ -65,7 +65,7 @@ namespace Minesweeper.View
 
             if (sender is Cell c)
             {
-                if (_game.IsVisited(c.R,c.C))
+                if (_game.IsVisited(c.R, c.C))
                 {
                     e.Handled = true;
                     return;
@@ -166,14 +166,6 @@ namespace Minesweeper.View
             }
         }
 
-        private readonly Color[] _numberColors =
-        {
-            Colors.White, Colors.SkyBlue, Colors.Navy, Colors.MediumPurple, Colors.IndianRed, Colors.DarkSalmon,
-            Colors.DarkCyan,
-            Colors.Yellow, Colors.SaddleBrown
-        };
-
-        private readonly Color _backgroundColor = Colors.AliceBlue;
         public int FontSize { get; } = 20;
 
         public void Invalidate(Cell c)
@@ -199,8 +191,8 @@ namespace Minesweeper.View
             {
                 var val = _game.CalcVal(c.R, c.C);
                 c.Content = val == 0 ? "" : val.ToString();
-                c.Foreground = new SolidColorBrush(_numberColors[val]);
-                c.Background = new SolidColorBrush(_backgroundColor);
+                c.Foreground = new SolidColorBrush(MineColors.NumberColors[val]);
+                c.Background = new SolidColorBrush(MineColors.BackgroundColor);
                 c.FontSize = FontSize;
                 c.BorderThickness = new Thickness(2);
             }

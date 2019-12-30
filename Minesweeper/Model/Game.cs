@@ -13,7 +13,6 @@ namespace Minesweeper.Model
         private bool[,] _visitedMap;
         private readonly int _bombCnt;
         private readonly Random _random = new Random();
-        private GameGrid _gameGrid;
 
         public bool GameRun { get; private set; }
 
@@ -22,7 +21,6 @@ namespace Minesweeper.Model
             Row = row;
             Column = column;
             _bombCnt = bombCnt;
-            _gameGrid = gameGrid;
             Clear();
         }
 
@@ -76,16 +74,6 @@ namespace Minesweeper.Model
         public CellType NextFlag(int r, int c)
         {
             return _flagMap[r, c] = (CellType) ((int) ++_flagMap[r, c] % (int) CellType.Length);
-        }
-
-        public void GameEnd()
-        {
-            GameRun = false;
-        }
-
-        private bool IsValid(int r, int c)
-        {
-            return r >= 0 && r < Row && c >= 0 && c < Column;
         }
 
         public bool IsVisited(int r, int c)

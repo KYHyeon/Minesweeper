@@ -66,6 +66,7 @@
     </Compile>
     <Compile Include="Model\CellType.cs" />
     <Compile Include="Model\Game.cs" />
+    <Compile Include="Model\MineColors.cs" />
     <Compile Include="View\Cell.cs" />
     <Compile Include="View\GameGrid.cs" />
     <Compile Include="MainWindow.xaml.cs">
